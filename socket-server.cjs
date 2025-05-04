@@ -1,14 +1,11 @@
 var app = require('express')();
-// const axios = require('axios');
 var http = require('http');
-// const FormData = require('form-data');
 var cors = require('cors');
-// var Redis = require('ioredis');
-// var fs = require('fs');
 const { Server } = require("socket.io");
-// const { Readable } = require("stream");
+const { createClient } = require('redis');
 
 let online = 0;
+let waitingUsers = [];
 
 app.use(cors());
 
@@ -19,7 +16,11 @@ app.use((req, res, next) => {
     console.log(req.rawHeaders[headers + 1]);
     next()
 })
+
 let httpServer = http.createServer(app);
+
+const redis = createClient();
+redis.connect();
 
 const io = new Server(httpServer
     , {
@@ -34,8 +35,6 @@ const io = new Server(httpServer
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
-        // "preflightContinue": false,
-        // "optionsSuccessStatus": 204
     },
     connectTimeout: 20000
 }
@@ -47,87 +46,60 @@ httpServer.listen(8005, function () {
 
 io.on('connection', (socket) => {
     console.log("connected someone");
-    //Assign the socket variable to WebSocket variable so we can use it the GET method
 
     online += 1;
 
-    socket.on('findPartner', (data) => {
-        const user = {
-            id: socket.id,
-            city: data.city,
-            age: data.age
-        };
+    socket.on('findPartner', async ({ city, age }) => {
+        const userKey = `user:${socket.id}`;
+        const waitingListKey = 'waiting_users';
 
-        console.log(`Ищем собеседника для ${socket.id} (${user.city}, ${user.age})`);
+        // save user data
+        await redis.hSet(userKey, { socketId: socket.id, city: city, age: age });
+        await redis.rPush(waitingListKey, socket.id);
 
-        // Попробуем найти подходящего собеседника
-        const partnerIndex = waitingUsers.findIndex(u =>
-            u.city === user.city &&
-            Math.abs(u.age - user.age) <= 5 // Допустим, разница в возрасте до 5 лет
-        );
+        const allIds = await redis.lRange(waitingListKey, 0, -1);
 
-        if (partnerIndex !== -1) {
-            const partner = waitingUsers[partnerIndex];
-            waitingUsers.splice(partnerIndex, 1); // удаляем из очереди
+        for (const otherId of allIds) {
+            if (otherId === socket.id) continue;
 
-            const roomId = `${socket.id}-${partner.id}`;
-            socket.join(roomId);
-            io.sockets.sockets.get(partner.id)?.join(roomId);
+            const partner = await redis.hGetAll(`user:${otherId}`);
+            if (partner && partner.city === city && Math.abs(partner.age - age) <= 5) {
+                // deleteing from queue
+                await redis.lRem(waitingListKey, 1, otherId);
+                await redis.lRem(waitingListKey, 1, socket.id);
 
-            io.to(roomId).emit('partnerFound', { roomId });
-            console.log(`Создана комната: ${roomId}`);
-        } else {
-            waitingUsers.push(user);
-            socket.emit('waiting');
-            console.log(`Пользователь ${socket.id} добавлен в очередь`);
+                // deleting users
+                await redis.del(userKey);
+                await redis.del(`user:${otherId}`);
+
+                // create room
+                const roomId = `room:${socket.id}:${otherId}`;
+                socket.join(roomId);
+                const partnerSocket = io.sockets.sockets.get(otherId);
+                partnerSocket?.join(roomId);
+
+                io.to(roomId).emit('partnerFound', { roomId });
+                return;
+            }
         }
+
+        socket.emit('waiting');
     });
-    
-    socket.on("disconnect", (reason) => {
+
+    socket.on('disconnect', async () => {
+        const waitingListKey = 'waiting_users';
         online -= 1;
         io.emit("currentOnline", online);
+        await redis.lRem(waitingListKey, 1, socket.id);
+        await redis.del(`user:${socket.id}`);
     });
     
     io.emit("currentOnline", online);
 })
-
-// var redis = new Redis();
-// var api_default_route = "https://бибиг.рф"
-
-// redis.subscribe('laravel_database_checkPassport');
-// redis.subscribe('laravel_database_notification');
-// redis.subscribe('laravel_database_rideChat');
-
-// redis.subscribe('laravel_database_message', function () {
-//     console.log('Listening to messages');
-// });
-
-// redis.on('message', function(channel, data) {
-//     console.log(channel);
-//     data = JSON.parse(data);
-// });
-
-// let userRooms = {};
-
-// io.engine.on('initial_headers', (headers, req) => {
-//     console.log('Initial headers received from client:', req.rawHeaders);
-// });
-
-// io.engine.on('headers', (headers, req) => {
-//     console.log('Response headers sent to client:', headers);
-// });
 
 io.engine.on("connection_error", (err) => {
     console.log("connection error: ");
     console.log(err.code);     // the error code, for example 1
     console.log(err.message);  // the error message, for example "Session ID unknown"
     console.log(err.context);  // some additional error context
-  });
-
-//   io.engine.on('close', (reason) => {
-//     console.log(`Socket engine closed connection. Reason: ${reason}`);
-// });
-
-// io.on('connection', function (socket) {
-
-// });
+});
