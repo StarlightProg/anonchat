@@ -1,8 +1,10 @@
 var app = require('express')();
 var http = require('http');
 var cors = require('cors');
+const axios = require('axios');
 const { Server } = require("socket.io");
 const { createClient } = require('redis');
+require('dotenv').config();
 
 let online = 0;
 let waitingUsers = [];
@@ -27,9 +29,6 @@ const io = new Server(httpServer
     allowEIO3: true,
     transports: ["websocket"],
     allowRequest: async (req, callback) => {
-        let headers = req.rawHeaders.indexOf('Origin');
-        console.log("server connect: ");
-        console.log(req.rawHeaders[headers + 1]);
         callback(null, true);
     },
     cors: {
@@ -42,10 +41,10 @@ const io = new Server(httpServer
 
 httpServer.listen(8005, function () {
     console.log('HTTP Listening to port 8005');
+    console.log("dfsfsdfsfsd");
 });
 
 io.on('connection', (socket) => {
-    console.log("connected someone");
 
     online += 1;
 
@@ -74,9 +73,9 @@ io.on('connection', (socket) => {
 
                 // create room
                 const roomId = `room:${socket.id}:${otherId}`;
-                socket.join(roomId);
+                await socket.join(roomId);
                 const partnerSocket = io.sockets.sockets.get(otherId);
-                partnerSocket?.join(roomId);
+                await partnerSocket?.join(roomId);
 
                 io.to(roomId).emit('partnerFound', { roomId });
                 return;
@@ -84,6 +83,67 @@ io.on('connection', (socket) => {
         }
 
         socket.emit('waiting');
+    });
+
+    socket.on('chatMessage', ({roomId, message}) => {
+        console.log("new message");
+        socket.to(roomId).emit('chatMessage', message);
+    });
+
+    socket.on('persistentChatRequest', ({roomId, name, age}) => {
+        console.log("persistentChatRequest " + roomId)
+        socket.to(roomId).emit('persistentChatRequest', name + " " + age + " , приглашает создать постоянный чат" );
+    });
+
+    socket.on('requestAccepted', ({roomId, name, age}) => {
+        console.log("chat request accepted");
+        io.to(roomId).emit('requestAccepted');
+
+        axios.post(url, formData, {
+            headers: {
+                'Authorization': `Bearer ${client_token}`,
+                ...formData.getHeaders()
+            }
+        }).then(function (response) {
+            if (data.file) {
+                console.log("Отправить сообщение с СОКЕТОМ с файлом" +  data.group_id + " " + data.message);
+
+                io.to(data.group_id).emit('send_message', {
+                    group_id: data.group_id, 
+                    client_id: response.data.result.client_id, 
+                    message: data.message || null, 
+                    message_id: response.data.result.message_id || null, 
+                    file_url: response.data.result.file_url || null,
+                    loading_id: data.loading_id || null,
+                    time: response.data.result.time,
+                    message_type: data.message_type || null,
+                });
+            }
+        }).catch(function (error) {
+            console.log("send_message error: ");
+            console.log(error.message);
+        });
+    });
+
+
+    socket.on("endChat", async (roomId) => {
+
+        socket.to(roomId).emit('leaveGroup', roomId);
+
+        const clients = await io.in(roomId).fetchSockets();
+
+        clients.forEach(s => {
+            s.leave(roomId);
+        });
+    });
+
+    socket.on("disconnecting", () => {
+        console.log(socket.rooms);
+        for (const room of socket.rooms) {
+            if (room !== socket.id) {
+                socket.to(room).emit('leaveGroup', room);
+            }
+        }
     });
 
     socket.on('disconnect', async () => {

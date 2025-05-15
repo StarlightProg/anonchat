@@ -4,30 +4,6 @@ let socket = io('http://localhost:8005', {
 
 console.log("socket");
 
-
-
-const searchSection = document.getElementById("search-section");
-const chatSection = document.getElementById("chat-section");
-const chatBox = document.getElementById("chat");
-
-let currentRoomId = null;
-
-document.getElementById("search-form").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const city = document.getElementById("cityInput").value;
-    const age = parseInt(document.getElementById("ageInput").value);
-
-    // const modal = new bootstrap.Modal(document.getElementById('searchingModal'));
-    // modal.show();
-
-    socket.emit("findPartner", { city, age });
-});
-
-$("#searchingModal").on("hidden.bs.modal", function () {
-  console.log("cancelling search")
-  socket.emit("cancelSearch");
-});
-
 socket.on("currentOnline", (message) => {
   console.log(message);
   $('#current-online').text(message);
@@ -38,36 +14,92 @@ socket.on("waiting", () => {
 });
 
 socket.on("partnerFound", ({ roomId }) => {
+    console.log("room created " + roomId);
     currentRoomId = roomId;
     searchSection.classList.add("d-none");
     chatSection.classList.remove("d-none");
 
-    socket.emit("joinRoom", roomId);
+    chatBox.innerHTML = "";
+
+    if ($("#searchingModal").hasClass("show")) {
+        $("#searchingModal").modal("hide");
+    } else {
+        $("#searchingModal").one("shown.bs.modal", function () {
+            $("#searchingModal").modal("hide");
+        });
+    }
+
+    toggleChatState(true);
 });
 
-document.getElementById("chat-form").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const message = document.getElementById("message").value;
-    if (message.trim() === "") return;
+socket.on("persistentChatRequest", (message) => {
+    console.log("persistentChatRequest " + message)
+    appendSystemMessage(message, "partner");
 
-    appendMessage(message, "me");
-    socket.emit("chatMessage", { roomId: currentRoomId, message });
-    document.getElementById("message").value = "";
+    const buttons = document.createElement("div");
+    buttons.className = "d-flex gap-2 mt-2";
+    
+    const yesButton = document.createElement("button");
+    yesButton.textContent = "Да";
+    yesButton.className = "btn btn-success btn-sm";
+    yesButton.addEventListener("click", () => {
+        nameInput = "ddd";
+        ageInput = 18;
+        socket.emit("requestAccepted", {currentRoomId, nameInput, ageInput});
+        buttons.remove();
+    });
+    
+    const noButton = document.createElement("button");
+    noButton.textContent = "Нет";
+    noButton.className = "btn btn-danger btn-sm";
+    noButton.addEventListener("click", () => {
+        buttons.remove();
+    });
+    
+    buttons.appendChild(yesButton);
+    buttons.appendChild(noButton);
+    
+    chatBox.appendChild(buttons);
+    chatBox.scrollTop = chatBox.scrollHeight;
 });
 
-socket.on("chatMessage", ({ message }) => {
+socket.on("requestAccepted", (message) => {
+    appendSystemMessage("Чат создается...");
+});
+
+socket.on("chatMessage", (message) => {
     appendMessage(message, "partner");
 });
 
-function appendMessage(msg, type) {
-    const div = document.createElement("div");
-    div.className = `message ${type}`;
-    div.textContent = msg;
-    div.style.padding = "8px";
-    div.style.marginBottom = "6px";
-    div.style.borderRadius = "12px";
-    div.style.background = type === "me" ? "#d1e7dd" : "#e2e3e5";
-    div.style.alignSelf = type === "me" ? "flex-end" : "flex-start";
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
+socket.on('leaveGroup', () => {
+    appendSystemMessage('Собеседник отключился.');
+    toggleChatState(false);
+});
+
+$("#end-chat").on('click', () => {
+    socket.emit('endChat', currentRoomId);
+    appendSystemMessage('Вы завершили чат.');
+    toggleChatState(false);
+});
+
+$("#find-new").on('click', () => {
+    city = document.getElementById("cityInput").value;
+    age = parseInt(document.getElementById("ageInput").value);
+
+    socket.emit("findPartner", { city, age });
+
+    appendSystemMessage('Поиск нового собеседника...');
+});
+
+$("#confirm-persistent-chat").on('click', () => {
+    nameInput = document.getElementById("nameInput").value;
+    ageInput = parseInt(document.getElementById("agePersistentInput").value);
+
+    console.log("persistentChatRequest " + currentRoomId)
+    socket.emit("persistentChatRequest", {roomId: currentRoomId, name: nameInput, age: ageInput });
+});
+
+$("#back-to-main").on('click', () => {
+    searchSection.classList.remove("d-none");
+    chatSection.classList.add("d-none");
+});
