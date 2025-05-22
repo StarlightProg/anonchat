@@ -32,9 +32,9 @@ socket.on("partnerFound", ({ roomId }) => {
     toggleChatState(true);
 });
 
-socket.on("persistentChatRequest", (message) => {
-    console.log("persistentChatRequest " + message)
-    appendSystemMessage(message, "partner");
+socket.on("persistentChatRequest", (name, age) => {
+    console.log("persistentChatRequest " + name + " " + age + " , приглашает создать постоянный чат");
+    appendSystemMessage(name + " " + age + " , приглашает создать постоянный чат", "partner");
 
     const buttons = document.createElement("div");
     buttons.className = "d-flex gap-2 mt-2";
@@ -45,7 +45,7 @@ socket.on("persistentChatRequest", (message) => {
     yesButton.addEventListener("click", () => {
         nameInput = "ddd";
         ageInput = 18;
-        socket.emit("requestAccepted", {currentRoomId, nameInput, ageInput});
+        socket.emit("requestAccepted", {currentRoomId, name, age, nameInput, ageInput});
         buttons.remove();
     });
     
@@ -65,6 +65,10 @@ socket.on("persistentChatRequest", (message) => {
 
 socket.on("requestAccepted", (message) => {
     appendSystemMessage("Чат создается...");
+});
+
+socket.on("systemMessage", (message) => {
+    appendSystemMessage(message);
 });
 
 socket.on("chatMessage", (message) => {
@@ -94,9 +98,10 @@ $("#find-new").on('click', () => {
 $("#confirm-persistent-chat").on('click', () => {
     nameInput = document.getElementById("nameInput").value;
     ageInput = parseInt(document.getElementById("agePersistentInput").value);
+    client_token = localStorage.getItem('auth_token');
 
     console.log("persistentChatRequest " + currentRoomId)
-    socket.emit("persistentChatRequest", {roomId: currentRoomId, name: nameInput, age: ageInput });
+    socket.emit("persistentChatRequest", {roomId: currentRoomId, name: nameInput, age: ageInput, token: client_token});
 });
 
 $("#back-to-main").on('click', () => {

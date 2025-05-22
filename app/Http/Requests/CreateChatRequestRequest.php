@@ -5,13 +5,15 @@ namespace App\Http\Requests;
 use App\Exceptions\ApiException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class RegisterRequest extends ApiRequest
+class CreateChatRequestRequest extends ApiRequest
 {
     public function rules(): array
     {
         return [
-            //'name' => 'required|string|unique:users,name'
+            'socket_first_id' => ['required', 'string'],
+            'socket_second_id' => ['required', 'string']
         ];
     }
 }

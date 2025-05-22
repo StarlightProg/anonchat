@@ -27,6 +27,8 @@
                 <button type="submit" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#searchingModal">Поиск</button>
             </div>
         </form>
+        <textarea id="messageeeee"></textarea>
+        <button onclick="sendmessageeeee()">Send</button>
     </div>
 
     <div id="chat-section" class="d-none">
@@ -73,5 +75,17 @@
     
     @include('scripts')
     @yield('scripts')
+    <script>
+        function sendmessageeeee() {
+            console.log("cmwkgwekg")
+            const message = document.getElementById("messageeeee").value;
+            socket.emit("new_messagedasrwqrq", message);
+        }
+            // Получение сообщений от сервера
+        socket.on("new_messagedasrwqrq", (data) => {
+            console.log("New message:", data);
+            alert(`New message: ${data.message}`);
+        });
+    </script>
 </body>
 </html>

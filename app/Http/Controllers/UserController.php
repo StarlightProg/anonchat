@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
 use App\Http\Requests\RegisterRequest;
+use App\Models\ChatRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,9 +33,9 @@ class UserController extends ApiController
 
     public function users(Request $request){
 
-        $user = User::all();
+        $user = ChatRequest::all();
 
-        return $this->success(['users' => json_encode($user)]);
+        return $this->success(['requests' => json_encode($user)]);
     }
 
     public function logout(Request $request)

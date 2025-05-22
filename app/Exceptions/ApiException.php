@@ -20,6 +20,8 @@ class ApiException extends Exception
     public const RETRY = 449;
     public const INTERNAL_ERROR = 500;
     public const SERVICE_UNAVAILABLE = 503;
+
+    public const CHAT_NOT_FOUND = 601;
     
     private $error_code;
     private $reason;
