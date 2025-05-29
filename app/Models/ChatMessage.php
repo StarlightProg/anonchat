@@ -5,12 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Chat extends Model
+class ChatMessage extends Model
 {
     use HasFactory;
 
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected $fillable = ['id'];
+    public function client(){
+        return User::where('id', $this->client_id)->first();
+    }
 }

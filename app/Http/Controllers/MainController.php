@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 class MainController extends Controller
 {
     public function index(){
-        $online = 5;
+        return view('main');
+    }
 
-        return view('main', ['online' => $online]);
+    public function chats(){
+        return view('main');
     }
 }

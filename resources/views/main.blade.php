@@ -50,7 +50,7 @@
                 <div class="mb-3">
                     <label for="nameInput" class="form-label">Ваше имя</label>
                     <input type="text" id="nameInput" class="form-control mb-2" placeholder="Your name">
-                    <label for="agePersistentInput" class="form-label">Ваше возраст</label>
+                    <label for="agePersistentInput" class="form-label">Ваш возраст</label>
                     <input type="number" id="agePersistentInput" class="form-control mb-2" placeholder="Your age">
                 </div>
                 <div class="d-flex gap-2">

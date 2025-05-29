@@ -7,13 +7,13 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class CreateChatRequest extends ApiRequest
+class SendMessageRequest extends ApiRequest
 {
     public function rules(): array
     {
         return [
-            'socket_first_id' => ['required', 'string'],
-            'socket_second_id' => ['required', 'string']
+            'group_id' => ['required', 'string', Rule::exists('chats', 'id')],
+            'message' => ['string'],
         ];
     }
 }

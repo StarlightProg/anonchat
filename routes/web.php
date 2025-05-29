@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [MainController::class, 'index']);
+Route::get('/chats', [MainController::class, 'chats']);
 
 Route::get('/rabbit', [MainController::class, function () {
     return view('rabbit');

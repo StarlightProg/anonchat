@@ -23,6 +23,8 @@ Route::group([
     Route::post('/register', [UserController::class, 'register']);//->middleware('throttle:2,5');
     Route::post('/login', [UserController::class, 'login']);//->middleware('throttle:2,5');
     Route::get('/users', [UserController::class, 'users']);//->middleware('throttle:2,5');
+    Route::get('/chats', [UserController::class, 'chats']);//->middleware('throttle:2,5');
+    Route::get('/requests', [UserController::class, 'requests']);//->middleware('throttle:2,5');
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -36,16 +38,13 @@ Route::middleware('auth:sanctum')->group(function () {
     ], function () {
         Route::post('/request', [ChatController::class, 'create_chat_request']);
         Route::post('/create', [ChatController::class, 'create_chat']);
+
+        Route::post('/send_message', [ChatController::class, 'send_message']);
+
+        Route::get('/{group_id}', [ChatController::class, 'chat_data']);
+
+        Route::post('/list', [ChatController::class, 'chat_list']);
     });
 });
 
-Route::post('/send-message', function (Request $request) {
-    $message = json_encode([
-        'user' => $request->input('user'),
-        'message' => $request->input('message'),
-        'timestamp' => now(),
-    ]);
 
-    ProcessChatMessage::dispatch($message);
-    return response()->json(['status' => 'Message sent']);
-});

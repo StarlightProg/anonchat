@@ -41,4 +41,9 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
     ];
+
+    public function chatGroups()
+    {
+        return $this->hasMany(ClientsInChat::class, 'client_id', 'id');
+    }
 }

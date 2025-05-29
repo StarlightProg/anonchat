@@ -78,7 +78,12 @@ function setupSocketHandlers(io, redis, channel) {
                 }
             }).then(function (response) {
                 console.log("ChatRequest created")
-                socket.to(roomId).emit('persistentChatRequest', {name, age});
+                socket.to(roomId).emit('persistentChatRequest', {
+                    roomId,
+                    name, 
+                    age, 
+                    request_id: response.data.result.request_id
+                });
             }).catch(function (error) {
                 console.log("request error: ");
                 console.log(error.message);
@@ -86,22 +91,34 @@ function setupSocketHandlers(io, redis, channel) {
             
         });
     
-        socket.on('requestAccepted', ({roomId, name, age, nameInput, ageInput}) => {
-            console.log("chat request accepted");
+        socket.on('requestAccepted', ({roomId, nameInput, ageInput, request_id, client_token}) => {
+            let formData = new FormData();
+            let sockets = roomId.split(":")
+            let socket_first_id = sockets[1];
+            let socket_second_id = sockets[2];
 
-            const payload = {
-                room_id: roomId,
-                name: name,
-                age: age,
-                nameInput: nameInput,
-                ageInput: ageInput
-            };
-    
-            channel.sendToQueue(QUEUE_NAME, Buffer.from(JSON.stringify(payload)), {
-                persistent: true
+            formData.append('socket_first_id', socket_first_id);
+            formData.append('socket_second_id', socket_second_id);
+            formData.append('name', nameInput);
+            formData.append('age', ageInput);
+            formData.append('request_id', request_id);
+
+            let url = `${api_default_route}/api/chat/create`;
+
+            console.log("persistentChatCreate " + roomId)
+            console.log("token " + client_token)
+            axios.post(url, formData, {
+                headers: {
+                    'Authorization': `Bearer ${client_token}`,
+                    ...formData.getHeaders()
+                }
+            }).then(function (response) {
+                console.log("Chat created")
+                socket.to(roomId).emit('requestAccepted', {name, age});
+            }).catch(function (error) {
+                console.log("request error: ");
+                console.log(error.message);
             });
-
-            io.to(roomId).emit('systemMessage', `Обрабатывается запрос создания чата...`);
         });
     
     

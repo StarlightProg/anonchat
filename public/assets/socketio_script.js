@@ -32,9 +32,10 @@ socket.on("partnerFound", ({ roomId }) => {
     toggleChatState(true);
 });
 
-socket.on("persistentChatRequest", (name, age) => {
+socket.on("persistentChatRequest", ({roomId, name, age, request_id}) => {
     console.log("persistentChatRequest " + name + " " + age + " , приглашает создать постоянный чат");
     appendSystemMessage(name + " " + age + " , приглашает создать постоянный чат", "partner");
+    let client_token = localStorage.getItem('auth_token');
 
     const buttons = document.createElement("div");
     buttons.className = "d-flex gap-2 mt-2";
@@ -45,8 +46,8 @@ socket.on("persistentChatRequest", (name, age) => {
     yesButton.addEventListener("click", () => {
         nameInput = "ddd";
         ageInput = 18;
-        socket.emit("requestAccepted", {currentRoomId, name, age, nameInput, ageInput});
-        buttons.remove();
+        socket.emit("requestAccepted", {roomId, nameInput, ageInput, request_id, client_token});
+        //buttons.remove();
     });
     
     const noButton = document.createElement("button");
@@ -63,8 +64,20 @@ socket.on("persistentChatRequest", (name, age) => {
     chatBox.scrollTop = chatBox.scrollHeight;
 });
 
-socket.on("requestAccepted", (message) => {
-    appendSystemMessage("Чат создается...");
+socket.on("requestAccepted", (chat_url) => {
+    const buttons = document.createElement("div");
+    buttons.className = "d-flex gap-2 mt-2";
+    
+    const redirectButton = document.createElement("button");
+    redirectButton.textContent = "Перейти в чат";
+    redirectButton.className = "btn btn-success btn-sm";
+    redirectButton.addEventListener("click", () => {
+        window.location.replace(chat_url);
+    });
+    
+    chatBox.appendChild(buttons);
+
+    appendSystemMessage("Чат создан");
 });
 
 socket.on("systemMessage", (message) => {
