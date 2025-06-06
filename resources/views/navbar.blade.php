@@ -63,3 +63,5 @@
         </div>
     </div>
 </div>
+
+<script src="{{asset('assets/auth.js')}}"></script>

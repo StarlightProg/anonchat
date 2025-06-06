@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
-use App\Http\Api\Resources\GroupCollection;
+use App\Http\Resources\Collections\GroupCollection;
 use App\Http\Requests\CreateChatRequest;
 use App\Http\Requests\CreateChatRequestRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\ChatMessageResource;
+use App\Http\Resources\Collections\ChatMessagesCollection;
 use App\Http\Resources\GroupResource;
 use App\Models\Chat;
 use App\Models\ChatMessage;
@@ -76,12 +77,6 @@ class ChatController extends ApiController
     }
 
     public function send_message(CreateChatRequest $request){
-        if (!ClientsInChat::where('client_id', $request->user()->id)
-                ->where('group_id', $request->group_id)
-                ->exists()) {
-            $this->failure("You're not member of chat", 403, ApiException::FORBIDDEN);
-        }
-
         $message = ChatMessage::create([
             "group_id" => $request->group_id,
             "client_id" => $request->user()->id,
@@ -92,16 +87,14 @@ class ChatController extends ApiController
     }
 
     public function chat_list(Request $request){
-        $groups = $request->user()->chatGroups;
+        $groups = $request->user()->chatGroups()->paginate($request->limit, ['*'], 'start', $request->page);
+
         return $this->success(new GroupCollection($groups));
     }
 
-    public function chat_data(Request $request, int $group_id){
-        // for (ClientsInChat::where('client_id', $request->user()->id)->where('group_id', $group_id)->exists()) { 
-        //     return ; 
-        // }
-
-        $groups = $request->user()->chatGroups;
-        return $this->success(new GroupResource($groups));
+    public function chat_data(Request $request, $group_id){
+        $messages = $request->chat->lastMessages()->paginate($request->limit, ['*'], 'start', $request->page);
+        
+        return $this->success(new ChatMessagesCollection($messages));
     }
 }

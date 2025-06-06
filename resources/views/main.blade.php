@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{asset('assets/style.css')}}">
 </head>
 <body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     @include('navbar')
     <div id="search-section">
         <form id="search-form" class="row g-3 text-center">

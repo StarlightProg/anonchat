@@ -11,6 +11,6 @@ class MainController extends Controller
     }
 
     public function chats(){
-        return view('main');
+        return view('chats');
     }
 }

@@ -37,6 +37,7 @@ class ApiMonitor
         Log::info("[REQUEST_PARAMS] $message", $request->all());
         // пропускаем запрос дальше и ловим результат
         $response = $next($request);
+        Log::info("[RESPOOOONSE] $response", $request->all());
         // получаем ответ от сервера
         $context = $response->getOriginalContent();
         if (is_array($context)) {

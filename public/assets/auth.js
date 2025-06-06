@@ -1,23 +1,24 @@
-$(document).ready(function () {
-    $.ajaxSetup({
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        beforeSend: function (xhr) {
-            const token = localStorage.getItem('auth_token');
-            if (token) {
-                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-            }
-        },
-        error: function (error) {
-            console.error('Ошибка AJAX:', error);
-            const errorMessage = error.responseJSON?.message || 'Ошибка сервера';
-            const errorDiv = $('.error-message:visible');
-            if (errorDiv.length) errorDiv.text(errorMessage).show();
+$.ajaxSetup({
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    },
+    beforeSend: function (xhr) {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            console.log("token " + token);
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         }
-    });
+    },
+    error: function (error) {
+        console.error('Ошибка AJAX:', error);
+        const errorMessage = error.responseJSON?.message || 'Ошибка сервера';
+        const errorDiv = $('.error-message:visible');
+        if (errorDiv.length) errorDiv.text(errorMessage).show();
+    }
+});
 
+$(document).ready(function () {
     const token = localStorage.getItem('auth_token');
     if (token) getUser();
     
@@ -67,6 +68,7 @@ async function getUser() {
         $.get('/api/user')
             .done(function (data) {
                 $('#auth-nav').html(
+                    `<li class='nav-item'><a class='nav-link' href="/chats">Chats</a></li>` +
                     `<li class='nav-item'><span class='nav-link'>${data.name}</span></li>` +
                     `<li class='nav-item'><a href='#' class='nav-link' onclick='logout()'>Выход</a></li>`
                 );

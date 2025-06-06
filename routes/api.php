@@ -38,12 +38,13 @@ Route::middleware('auth:sanctum')->group(function () {
     ], function () {
         Route::post('/request', [ChatController::class, 'create_chat_request']);
         Route::post('/create', [ChatController::class, 'create_chat']);
+        Route::get('/list', [ChatController::class, 'chat_list'])->middleware('route_paginate');
 
-        Route::post('/send_message', [ChatController::class, 'send_message']);
+        Route::middleware('client_in_chat')->group(function () {
+            Route::post('/send_message', [ChatController::class, 'send_message']);
 
-        Route::get('/{group_id}', [ChatController::class, 'chat_data']);
-
-        Route::post('/list', [ChatController::class, 'chat_list']);
+            Route::get('/{group_id}', [ChatController::class, 'chat_data'])->middleware('route_paginate');
+        });
     });
 });
 

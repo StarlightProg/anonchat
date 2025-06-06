@@ -1,0 +1,76 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #e0eafc, #cfdef3);
+    color: #333;
+}
+
+.main-container {
+    display: flex;
+    height: calc(100vh - 60px); /* с учётом navbar */
+    margin-top: 60px; /* компенсация перекрытия navbar */
+}
+
+.chat-sidebar {
+    width: 300px;
+    background-color: #f0f4ff;
+    padding: 20px;
+    border-right: 2px solid #a4b8d8;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+.chat-item {
+    background-color: #dbe7ff;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    border: 2px solid #aac4ff;
+    font-weight: 500;
+    color: #1a3e72;
+}
+
+.chat-item:hover {
+    background-color: #c2d9ff;
+    transform: scale(1.03);
+}
+
+.chat-item:not(:last-child) {
+    border-bottom: 2px solid #94b3f0;
+}
+
+
+.chat-window {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #ffffffcc;
+    backdrop-filter: blur(3px);
+}
+
+h2, h3 {
+    margin-top: 0;
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+        margin-top: 0;
+        height: auto;
+    }
+
+    .chat-sidebar {
+        width: 100%;
+        height: 40vh;
+        border-right: none;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .chat-window {
+        height: 60vh;
+    }
+}

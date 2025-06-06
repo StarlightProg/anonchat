@@ -12,8 +12,7 @@ class CreateChatRequest extends ApiRequest
     public function rules(): array
     {
         return [
-            'socket_first_id' => ['required', 'string'],
-            'socket_second_id' => ['required', 'string']
+            'group_id' => ['required', 'string']
         ];
     }
 }
