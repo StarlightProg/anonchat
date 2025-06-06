@@ -14,89 +14,20 @@
 
     <div class="main-container">
         <div class="chat-sidebar">
-            <h2>Мои чаты</h2>
+            <h2>My chats</h2>
             <div id="chat-list"></div>
         </div>
-        <div class="chat-window" id="chat-window">
-            <h3>Выберите чат из списка</h3>
+        <div class="chat-window">
+            <div id="chat-window">
+                <h3>Select chat</h3>
+                <div id="messages-container"></div>
+            </div>
+            <form id="message-form" class="message-form">
+                <textarea id="message-input" placeholder="Enter message..." required></textarea>
+                <button type="submit">Send</button>
+            </form>
         </div>
     </div>
 
-    <script>
-        const token = localStorage.getItem('auth_token');
-
-        if (!token) {
-            window.location.href = '/';
-        }
-
-        $.ajaxSetup({
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            beforeSend: function (xhr) {
-                if (token) {
-                    console.log("token " + token);
-                    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-                }
-            },
-            error: function (error) {
-                console.error('Ошибка AJAX:', error);
-                const errorMessage = error.responseJSON?.message || 'Ошибка сервера';
-                const errorDiv = $('.error-message:visible');
-                if (errorDiv.length) errorDiv.text(errorMessage).show();
-            }
-        });
-
-        console.log("token2 " + token);
-
-        async function fetchChats() {
-            $.get('/api/chat/list')
-                .done(function (data) {
-                    if (data.success == false) {
-                        console.error("Not authorized");
-                        window.location.href = '/';
-                    }
-
-                    console.log(data);
-                    renderChatList(data.result.groups);
-                })
-                .fail(function(error) {
-                    console.log(error);
-                })
-        }
-
-        function renderChatList(chats) {
-            const list = document.getElementById('chat-list');
-            list.innerHTML = '';
-
-            chats.forEach(chat => {
-                const div = document.createElement('div');
-                div.className = 'chat-item';
-                div.textContent = `Чат №${chat.chat_name}`;
-                div.onclick = () => loadChat(chat);
-                list.appendChild(div);
-            });
-        }
-
-        function loadChat(chat) {
-            const windowDiv = document.getElementById('chat-window');
-            windowDiv.innerHTML = `<h3>Чат №${chat.chat_name}</h3><pre>${JSON.stringify(chat, null, 2)}</pre>`;
-            $.get('/api/chat/${chat.chat_name}')
-                .done(function (data) {
-                    if (data.success == false) {
-                        console.error("Not authorized");
-                        window.location.href = '/';
-                    }
-
-                    console.log(data);
-                    renderChatList(data.result.groups);
-                })
-                .fail(function(error) {
-                    console.log(error);
-                })
-        }
-
-        fetchChats();
-    </script>
+    <script src="{{asset('assets/chats.js')}}"></script>
 </html>

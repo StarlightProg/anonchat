@@ -19,7 +19,7 @@ class PaginateRoute
         $limit = $request->input('limit', 10);
 
         $request->request->set('page', $page);
-        $request->request->set('page', $limit);
+        $request->request->set('limit', $limit);
 
         return $next($request);
     }
