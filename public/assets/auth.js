@@ -67,6 +67,7 @@ async function getUser() {
 
         $.get('/api/user')
             .done(function (data) {
+                localStorage.setItem('user_name', data.name);
                 $('#auth-nav').html(
                     `<li class='nav-item'><a class='nav-link' href="/chats">Chats</a></li>` +
                     `<li class='nav-item'><span class='nav-link'>${data.name}</span></li>` +

@@ -35,21 +35,6 @@ document.getElementById("message-form").addEventListener("submit", function (e) 
     document.getElementById("message").value = "";
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    const createChatButton = document.getElementById('create-persistent-chat');
-    const persistentChatForm = document.getElementById('persistent-chat-form');
-    const cancelPersistentChatButton = document.getElementById('cancel-persistent-chat');
-    const confirmPersistentChatButton = document.getElementById('confirm-persistent-chat');
-    
-    createChatButton.addEventListener('click', function () {
-        persistentChatForm.classList.remove('d-none');
-    });
-    
-    cancelPersistentChatButton.addEventListener('click', function () {
-        persistentChatForm.classList.add('d-none');
-    });
-});
-
 function appendMessage(msg, type) {
     const div = document.createElement("div");
     div.className = `message ${type}`;

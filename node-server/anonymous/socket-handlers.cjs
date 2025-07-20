@@ -8,7 +8,7 @@ let waitingUsers = [];
 
 let api_default_route = process.env.API_DEFAULT_ROUTE || 'http://127.0.0.1:8000';
 
-function setupSocketHandlers(io, redis, channel) {
+function setupSocketHandlers(io, redis) {
     let online = 0;
 
     io.on('connection', (socket) => {
@@ -106,6 +106,8 @@ function setupSocketHandlers(io, redis, channel) {
             let url = `${api_default_route}/api/chat/create`;
 
             console.log("persistentChatCreate " + roomId)
+            console.log("socket_first_id " + socket_first_id)
+            console.log("socket_second_id " + socket_second_id)
             console.log("token " + client_token)
             axios.post(url, formData, {
                 headers: {
@@ -114,7 +116,7 @@ function setupSocketHandlers(io, redis, channel) {
                 }
             }).then(function (response) {
                 console.log("Chat created")
-                socket.to(roomId).emit('requestAccepted', {name, age});
+                io.to(roomId).emit('requestAccepted', response.data.result.chat_id);
             }).catch(function (error) {
                 console.log("request error: ");
                 console.log(error.message);
@@ -176,9 +178,9 @@ function setupSocketHandlers(io, redis, channel) {
     
     io.engine.on("connection_error", (err) => {
         console.log("connection error: ");
-        console.log(err.code);     // the error code, for example 1
-        console.log(err.message);  // the error message, for example "Session ID unknown"
-        console.log(err.context);  // some additional error context
+        console.log(err.code);
+        console.log(err.message);
+        console.log(err.context);
     });
 }
 

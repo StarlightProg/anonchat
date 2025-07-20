@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreign('group_id')->references('id')->on('chats')->onDelete('cascade');
             $table->foreignId('client_id')->references('id')->on('users');
             $table->string("name");
-            $table->integer("age");
             $table->timestamps();
         });
     }

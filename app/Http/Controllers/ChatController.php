@@ -59,13 +59,11 @@ class ChatController extends ApiController
                 'group_id' => $chat->id,
                 'client_id' => $request->user()->id,
                 'name' => $chat_request->name,
-                'age' => $chat_request->age,
             ],
             [
                 'group_id' => $chat->id,
                 'client_id' => $chat_request->client_id,
                 'name' => $request->name,
-                'age' => $request->age,
             ]
         ];
 

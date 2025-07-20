@@ -46,19 +46,6 @@
             <button id="find-new" class="btn btn-primary w-50 d-none" data-bs-toggle="modal" data-bs-target="#searchingModal">Найти собеседника</button>
             <button id="create-persistent-chat" class="btn btn-warning w-100">Создать постоянный чат</button>
         </div>
-        
-        <div id="persistent-chat-form" class="border rounded p-3 mt-3 bg-light d-none">
-                <div class="mb-3">
-                    <label for="nameInput" class="form-label">Ваше имя</label>
-                    <input type="text" id="nameInput" class="form-control mb-2" placeholder="Your name">
-                    <label for="agePersistentInput" class="form-label">Ваш возраст</label>
-                    <input type="number" id="agePersistentInput" class="form-control mb-2" placeholder="Your age">
-                </div>
-                <div class="d-flex gap-2">
-                    <button id="confirm-persistent-chat" class="btn btn-success w-50">Подтвердить</button>
-                    <button id="cancel-persistent-chat" class="btn btn-secondary w-50">Отмена</button>
-                </div>
-        </div>
     </div>    
     
     <div class="modal fade" id="searchingModal" tabindex="-1" aria-hidden="true">
