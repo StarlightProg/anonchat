@@ -16,7 +16,6 @@ $.ajaxSetup({
     },
     beforeSend: function (xhr) {
         if (token) {
-            console.log("token " + token);
             xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         }
     },
@@ -28,8 +27,6 @@ $.ajaxSetup({
     }
 });
 
-console.log("token2 " + token);
-
 async function fetchChats() {
     $.get('/api/chat/list')
         .done(function (data) {
@@ -37,8 +34,6 @@ async function fetchChats() {
                 console.error("Not authorized");
                 window.location.href = '/';
             }
-
-            console.log(data);
             renderChatList(data.result.groups);
         })
         .fail(function(error) {
@@ -53,15 +48,18 @@ function renderChatList(chats) {
     chats.forEach(chat => {
         const div = document.createElement('div');
         div.className = 'chat-item';
+        div.id = "chat" + chat.group_id;
 
         const chatTitle = document.createElement('div');
-        chatTitle.textContent = `Чат №${chat.chat_name}`;
+        chatTitle.textContent = `${chat.chat_name}`;
 
         const lastMessage = document.createElement('div');
+        lastMessage.className = 'lastMessage';
+
         if (chat.last_message) {
-            lastMessage.textContent = chat.last_message.message;
+            lastMessage.innerHTML = `<strong>${chat.last_message.client.name}:</strong> ` + chat.last_message.message + " " + chat.last_message.time;
         } else {
-            lastMessage.textContent = '';
+            lastMessage.innerHTML = '';
         }
 
         lastMessage.style.fontSize = '0.9em';
@@ -97,7 +95,7 @@ function loadChat(chat_id) {
                 const messageElem = document.createElement('div');
                 messageElem.className = 'message';
 
-                messageElem.innerHTML = `<strong>${msg.client.name}:</strong> ${msg.message}`;
+                messageElem.innerHTML = `<strong>${msg.client.name}:</strong> ${msg.message} <i>${msg.time}</i>`;
 
                 messagesDiv.appendChild(messageElem);
             }
@@ -106,6 +104,10 @@ function loadChat(chat_id) {
             windowDiv.innerHTML = '';
             windowDiv.appendChild(existingHeader);
             windowDiv.appendChild(messagesDiv);
+
+            const newUrl = `/chats/${chat_id}`;
+
+            history.pushState(null, '', newUrl); 
         })
         .fail(function(error) {
             console.log(error);
@@ -124,12 +126,9 @@ $(document).ready(function() {
 
         const messageInput = $('#message-input');
         const messageText = messageInput.val().trim();
-        console.log(currentChatId);
-        console.log("message-input " + messageInput);
-        console.log("message-text " + messageText);
+
         if (messageText === '') return;
         if (typeof(currentChatId) == "undefined") return;
-        console.log(currentChatId);
 
         const pathParts = window.location.pathname.split('/');
         let chatId = pathParts[pathParts.length - 1];
@@ -139,43 +138,20 @@ $(document).ready(function() {
         }
 
         socket.emit("chatMessage", {roomId: currentChatId, message: messageText, client_token: token});
-
-        // $.ajax({
-        //     url: '/api/chat/send_message',
-        //     type: 'POST',
-        //     data: JSON.stringify({
-        //         group_id: currentChatId,
-        //         message: messageText
-        //     }),
-        //     success: function(data) {
-        //         console.log("datqtqwtwq");
-        //         if (data.success) {
-        //             let messageElemm = document.createElement('div');
-        //             messageElemm.className = 'message';
-
-        //             messageElemm.innerHTML = `<strong>${data.result.message.client.name}:</strong> ${data.result.message.message}`;
-
-        //             messagesContainer.appendChild(messageElemm);
-
-        //             $('#messageInput').val('');
-        //         } else {
-        //             alert('Error sending message');
-        //         }
-        //     }
-        // });
     });
 
     socket.on('chatMessage', (message) => {
-        console.log("fdsfsdfdsg");
-        console.log("yreergeryh " + message.message);
         let messagessContainer = document.querySelector('.messages-container');
+
+        $(`#chat${message.group_id} .lastMessage`).html(`<strong>${message.client.name}:</strong> ` + message.message + " " + message.time);
+
         if (currentChatId != message.group_id) {
             return;
         }
         let messageElemm = document.createElement('div');
         messageElemm.className = 'message';
 
-        messageElemm.innerHTML = `<strong>${message.client.name}:</strong> ${message.message}`;
+        messageElemm.innerHTML = `<strong>${message.client.name}:</strong> ${message.message} <i>${message.time}</i>`;
 
         messagessContainer.appendChild(messageElemm);
 

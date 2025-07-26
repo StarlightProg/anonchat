@@ -11,8 +11,6 @@ function setupSocketHandlers(io, redis, channel) {
 
     io.on('connection', (socket) => {
         socket.on('chatMessage', ({roomId, message, client_token}) => {
-            console.log("new www message");
-        
             let url = `${api_default_route}/api/chat/send_message`;
             var formData = new FormData();
             formData.append('group_id', roomId);
@@ -24,9 +22,7 @@ function setupSocketHandlers(io, redis, channel) {
                     ...formData.getHeaders()
                 }
             }).then(function (response) {
-                console.log("roomId " + roomId);
-                console.log("response.result.message " + response.result.message);
-                socket.to(roomId).emit('chatMessage', response.result.message);
+                io.to(roomId).emit('chatMessage', response.data.result.message);
             }).catch(function (error) {
                 console.log("message error: ");
                 console.log(error.message);
@@ -41,15 +37,16 @@ function setupSocketHandlers(io, redis, channel) {
             await redis.del(`user:${socket.id}`);
         });
 
-        socket.on("chat_user_connected", function (client_token) {
-            axios.post(`${api_default_route}/api/chat/list`, {
-            }, {
+        socket.on("chat_user_connected", function ({client_token}) {
+            console.log("client_token " + client_token);
+
+            axios.get(`${api_default_route}/api/chat/list`, {
                 headers: {
-                    'Authorization': `Bearer ${client_token}`
+                    'Authorization': `Bearer ${client_token}`,
                 }
             })
             .then(function (response) {
-                response.result.groups.forEach(chat => {
+                response.data.result.groups.forEach(chat => {
                     socket.join(chat.group_id);
                 });
             })
