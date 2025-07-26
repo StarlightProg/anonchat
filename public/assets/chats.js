@@ -20,8 +20,8 @@ $.ajaxSetup({
         }
     },
     error: function (error) {
-        console.error('Ошибка AJAX:', error);
-        const errorMessage = error.responseJSON?.message || 'Ошибка сервера';
+        console.error('Error AJAX:', error);
+        const errorMessage = error.responseJSON?.message || 'Server error';
         const errorDiv = $('.error-message:visible');
         if (errorDiv.length) errorDiv.text(errorMessage).show();
     }

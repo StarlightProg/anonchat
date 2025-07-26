@@ -11,8 +11,8 @@ $.ajaxSetup({
         }
     },
     error: function (error) {
-        console.error('Ошибка AJAX:', error);
-        const errorMessage = error.responseJSON?.message || 'Ошибка сервера';
+        console.error('Error AJAX:', error);
+        const errorMessage = error.responseJSON?.message || 'Server error';
         const errorDiv = $('.error-message:visible');
         if (errorDiv.length) errorDiv.text(errorMessage).show();
     }
@@ -47,7 +47,7 @@ $(document).ready(function () {
         const errorDiv = $('#register-error');
 
         if (password !== confirmPassword) {
-            errorDiv.text('Пароли не совпадают').show();
+            errorDiv.text('Password not matches').show();
             return;
         }
         
@@ -71,7 +71,7 @@ async function getUser() {
                 $('#auth-nav').html(
                     `<li class='nav-item'><a class='nav-link' href="/chats">Chats</a></li>` +
                     `<li class='nav-item'><span class='nav-link'>${data.name}</span></li>` +
-                    `<li class='nav-item'><a href='#' class='nav-link' onclick='logout()'>Выход</a></li>`
+                    `<li class='nav-item'><a href='#' class='nav-link' onclick='logout()'>Logout</a></li>`
                 );
         });
 }
@@ -81,10 +81,10 @@ async function logout() {
         .done(function (data) {
             $('#auth-nav').html(
                 `<li class="nav-item">
-                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Вход</a>
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a>
                 </li>` +
                 `<li class="nav-item">
-                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Регистрация</a>
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Register</a>
                 </li>`
             );
     });

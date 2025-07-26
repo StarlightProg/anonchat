@@ -10,7 +10,7 @@ socket.on("currentOnline", (message) => {
 });
 
 socket.on("waiting", () => {
-    console.log("Ждём партнёра...");
+    console.log("Findinh partner...");
 });
 
 socket.on("partnerFound", ({ roomId }) => {
@@ -33,15 +33,15 @@ socket.on("partnerFound", ({ roomId }) => {
 });
 
 socket.on("persistentChatRequest", ({roomId, name, age, request_id}) => {
-    console.log("persistentChatRequest " + name + " " + age + " , приглашает создать постоянный чат");
-    appendSystemMessage(name + " " + age + " , приглашает создать постоянный чат", "partner");
+    console.log("persistentChatRequest " + name + " " + age + " , invites you to create persistent chat");
+    appendSystemMessage(name + " " + age + " , invites you to create persistent chat", "partner");
     let client_token = localStorage.getItem('auth_token');
 
     const buttons = document.createElement("div");
     buttons.className = "d-flex gap-2 mt-2";
     
     const yesButton = document.createElement("button");
-    yesButton.textContent = "Да";
+    yesButton.textContent = "Yes";
     yesButton.className = "btn btn-success btn-sm";
     yesButton.addEventListener("click", () => {
         nameInput = localStorage.getItem('user_name');
@@ -51,7 +51,7 @@ socket.on("persistentChatRequest", ({roomId, name, age, request_id}) => {
     });
     
     const noButton = document.createElement("button");
-    noButton.textContent = "Нет";
+    noButton.textContent = "No";
     noButton.className = "btn btn-danger btn-sm";
     noButton.addEventListener("click", () => {
         buttons.remove();
@@ -70,7 +70,7 @@ socket.on("requestAccepted", (chat_url) => {
     buttons.className = "d-flex gap-2 mt-2";
     
     const redirectButton = document.createElement("button");
-    redirectButton.textContent = "Перейти в чат";
+    redirectButton.textContent = "Move to chat";
     redirectButton.className = "btn btn-success btn-sm";
     redirectButton.addEventListener("click", () => {
         window.location.replace('chats/' + chat_url);
@@ -78,7 +78,7 @@ socket.on("requestAccepted", (chat_url) => {
 
     buttons.appendChild(redirectButton);
     
-    appendSystemMessage("Чат создан");
+    appendSystemMessage("Chat created");
     chatBox.appendChild(buttons);
 });
 
@@ -91,13 +91,13 @@ socket.on("chatMessage", (message) => {
 });
 
 socket.on('leaveGroup', () => {
-    appendSystemMessage('Собеседник отключился.');
+    appendSystemMessage('Parner disconnected');
     toggleChatState(false);
 });
 
 $("#end-chat").on('click', () => {
     socket.emit('endChat', currentRoomId);
-    appendSystemMessage('Вы завершили чат.');
+    appendSystemMessage('You quit chat');
     toggleChatState(false);
 });
 
@@ -107,7 +107,7 @@ $("#find-new").on('click', () => {
 
     socket.emit("findPartner", { city, age });
 
-    appendSystemMessage('Поиск нового собеседника...');
+    appendSystemMessage('Finding new partner...');
 });
 
 $("#create-persistent-chat").on('click', () => {
