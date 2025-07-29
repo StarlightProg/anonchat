@@ -1,0 +1,72 @@
+version: "3"
+services:
+    api:
+        container_name: anon_nginx
+        build:
+            context: ./
+            dockerfile: docker/development/nginx/Dockerfile
+        ports:
+            - "8000:80"
+        volumes:
+            - .:/var/www
+        networks:
+            - anonchat-network
+    api-php-fpm:
+        container_name: anon_api-php
+        build:
+            context: ./
+            dockerfile: docker/development/php-fpm/Dockerfile
+        volumes:
+            - .:/var/www
+        networks:
+            - anonchat-network
+        depends_on:
+            - mysql
+            - api
+    mysql:
+        image: 'mysql/mysql-server:8.0'
+        container_name: anon_db
+        ports:
+            - '${FORWARD_DB_PORT:-3307}:3307'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1\
+            MYSQLD_OPTS: "--skip-networking --socket=/tmp/mysql.sock"
+        volumes:
+            - dbdata:/var/lib/mysql
+            # - ./docker/my.cnf:/etc/mysql/my.cnf
+        networks:
+            - anonchat-network
+        healthcheck:
+            test:
+                - CMD
+                - mysqladmin
+                - ping
+                - '-p${DB_PASSWORD}'
+            retries: 3
+            timeout: 5s
+    redis:
+        image: redis:latest
+        container_name: anon_redis
+        restart: always
+        ports:
+        - "${REDIS_PORT:-6380}:6380"
+        volumes:
+        - redis_data:/data
+        environment:
+            - ALLOW_EMPTY_PASSWORD=no
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+volumes:
+    cache_data:
+        driver: "local"
+    dbdata:
+        driver: "local"
+    redis_data:
+        driver: "local"
+networks:
+    anonchat-network:
+        driver: bridge
