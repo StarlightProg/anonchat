@@ -23,6 +23,36 @@ services:
         depends_on:
             - mysql
             - api
+    anonymous-chat:
+        container_name: anonymous-chat
+        build:
+            context: ./
+            dockerfile: node-server/anonymous/Dockerfile
+            args:
+                - ANONYMOUS_PORT=${ANONYMOUS_PORT:-8005}
+        environment:
+            - ANONYMOUS_PORT=${ANONYMOUS_PORT:-8005}
+        ports:
+            - "${ANONYMOUS_PORT:-8005}:${ANONYMOUS_PORT:-8005}"
+        networks:
+            - anonchat-network 
+        depends_on:
+            - redis
+    persistent-chat:
+        container_name: persistent-chat
+        build:
+            context: ./
+            dockerfile: node-server/chats_server/Dockerfile
+            args:
+                - CHATS_PORT=${CHATS_PORT:-8006}
+        environment:
+            - CHATS_PORT=${CHATS_PORT:-8006}
+        ports:
+            - "${CHATS_PORT:-8006}:${CHATS_PORT:-8006}"
+        networks:
+            - anonchat-network 
+        depends_on:
+            - redis
     mysql:
         image: 'mysql/mysql-server:8.0'
         container_name: anon_db
@@ -60,6 +90,8 @@ services:
             - ALLOW_EMPTY_PASSWORD=no
             - REDIS_PASSWORD=${REDIS_PASSWORD}
             - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+        networks:
+            - anonchat-network 
 volumes:
     cache_data:
         driver: "local"

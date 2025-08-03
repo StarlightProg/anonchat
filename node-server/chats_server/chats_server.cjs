@@ -6,12 +6,15 @@ const { createClient } = require('redis');
 require('dotenv').config();
 const { setupSocketHandlers } = require('./socket-handlers.cjs');
 
-let online = 0;
-let waitingUsers = [];
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err.message, err.stack);
+  });
+  
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Rejection:', err.message || err);
+});
 
-let api_default_route = process.env.API_DEFAULT_ROUTE || 'http://127.0.0.1:8000';
-
-const PORT = process.env.PORT || 8006;
+const PORT = process.env.CHATS_PORT || 8006;
 
 app.use(cors());
 
@@ -25,7 +28,9 @@ app.use((req, res, next) => {
 
 let httpServer = http.createServer(app);
 
-const redis = createClient();
+const redis = createClient({
+    url: (process.env.REDIS_HOST != undefined) ? `redis://default:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}` : `redis://127.0.0.1:6379`
+});
 redis.connect();
 
 const io = new Server(httpServer
@@ -43,9 +48,8 @@ const io = new Server(httpServer
 }
 );
 
-httpServer.listen(8006, function () {
-    console.log('HTTP Listening to port 8006');
-    console.log("dfsfsdfsfsd");
+httpServer.listen(PORT, function () {
+    console.log(`HTTP Listening to port ${PORT}`);
 });
 
 // socket io handlers

@@ -4,6 +4,8 @@ up: docker-up
 down: docker-down
 restart: down up
 
+docker-restart:
+	docker compose down --remove-orphans && docker compose build && docker compose up -d
 docker-up:
 	docker compose up -d
 docker-down:

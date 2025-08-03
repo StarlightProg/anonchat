@@ -91,7 +91,7 @@ socket.on("chatMessage", (message) => {
 });
 
 socket.on('leaveGroup', () => {
-    appendSystemMessage('Parner disconnected');
+    appendSystemMessage('Partner disconnected');
     toggleChatState(false);
 });
 

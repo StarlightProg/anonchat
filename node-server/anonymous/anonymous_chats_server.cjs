@@ -7,12 +7,15 @@ require('dotenv').config();
 const { setupMessageQueue } = require('./message-queue.cjs');
 const { setupSocketHandlers } = require('./socket-handlers.cjs');
 
-let online = 0;
-let waitingUsers = [];
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err.message, err.stack);
+  });
+  
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Rejection:', err.message || err);
+});
 
-let api_default_route = process.env.API_DEFAULT_ROUTE || 'http://127.0.0.1:8000';
-
-const PORT = process.env.PORT || 8005;
+const PORT = process.env.ANONYMOUS_PORT || 8005;
 
 app.use(cors());
 
@@ -25,8 +28,10 @@ app.use((req, res, next) => {
 })
 
 let httpServer = http.createServer(app);
+const redis = createClient({
+    url: (process.env.REDIS_HOST != undefined) ? `redis://default:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}` : `redis://127.0.0.1:6379`
+});
 
-const redis = createClient();
 redis.connect();
 
 const io = new Server(httpServer
@@ -44,16 +49,15 @@ const io = new Server(httpServer
 }
 );
 
-httpServer.listen(8005, function () {
-    console.log('HTTP Listening to port 8005');
-    console.log("dfsfsdfsfsd");
+httpServer.listen(PORT, function () {
+    console.log(`HTTP Listening to port ${PORT}`);
 });
 
 let channel;
 // rabbitmq connection
-setupMessageQueue().then(ch => {
-    channel = ch;
-});
+// setupMessageQueue().then(ch => {
+//     channel = ch;
+// });
 
 // socket io handlers
 setupSocketHandlers(io, redis, channel);

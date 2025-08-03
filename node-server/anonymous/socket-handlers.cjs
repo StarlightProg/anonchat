@@ -12,7 +12,6 @@ function setupSocketHandlers(io, redis) {
     let online = 0;
 
     io.on('connection', (socket) => {
-        console.log("BTRJRTBRTBRT");
         online += 1;
     
         socket.on('findPartner', async ({ city, age }) => {
@@ -173,6 +172,10 @@ function setupSocketHandlers(io, redis) {
             await redis.del(`user:${socket.id}`);
         });
         
+        socket.on('error', (err) => {
+            console.error('Socket Error:', err.message);
+        });
+
         io.emit("currentOnline", online);
     })
     
