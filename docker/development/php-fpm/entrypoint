@@ -55,6 +55,8 @@ prepare_storage() {
 
     # Ensure the symlink exists
     php artisan storage:link
+
+    php artisan key:generate
 }
 
 wait_for_db() {
