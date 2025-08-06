@@ -10,8 +10,8 @@ jobs:
   laravel-tests:
     runs-on: ubuntu-latest
     env:
-      DB_HOST: mysql
-      DB_DATABASE: testing
+      DB_HOST: anon_db
+      DB_DATABASE: anonchat
       DB_USERNAME: root
       DB_PASSWORD: 1234
       REDIS_PASSWORD: 1234
@@ -43,7 +43,8 @@ jobs:
         done
         echo "Container did not become healthy in time"
         docker logs anon_api-php
-        docker logs ps
+        docker logs anon_db
+        docker ps
         exit 1
 
     - name: Run tests inside container
@@ -54,5 +55,4 @@ jobs:
       if: always()
       run: |
         make docker-down
-        docker logs anon_db
         
