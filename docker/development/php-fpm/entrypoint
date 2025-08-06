@@ -4,6 +4,7 @@ main() {
     if [ "$IS_WORKER" = "true" ]; then
         exec "$@"
     else
+        composer_install
         prepare_file_permissions
         run_npm_build
         clear_cache
@@ -14,6 +15,10 @@ main() {
         touch /tmp/.ready
         run_server "$@"
     fi
+}
+
+composer_install() {
+    composer install
 }
 
 prepare_file_permissions() {
