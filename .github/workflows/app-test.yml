@@ -29,7 +29,16 @@ jobs:
         make docker-build
         make docker-up
         docker ps
-        sleep 20
+    
+    - name: Wait for container
+      run: |
+        until docker inspect -f '{{.State.Running}}' anon_api-php 2>/dev/null | grep -q "true"; do
+          sleep 1
+        done
+
+        docker exec anon_api-php bash -c 'until ./artisan migrate:status 2>&1 | grep -q -E "(Migration table not found|Migration name)"; do sleep 1; done'
+        
+        echo "Container is ready"
 
     - name: Run tests inside container
       run: |
