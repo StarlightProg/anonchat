@@ -1,0 +1,41 @@
+name: App Docker Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+    env:
+      DB_HOST: mysql
+      DB_DATABASE: testing
+      DB_USERNAME: root
+      DB_PASSWORD: 1234
+      REDIS_PASSWORD: 1234
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Create .env from example
+      run: cp .env.example .env
+
+    - name: Build and start containers
+      env:
+        DOCKER_BUILDKIT: "0"
+      run: | 
+        make docker-build
+        make docker-up
+        docker ps
+        sleep 20
+
+    - name: Run tests inside container
+      run: |
+        docker exec -it anon_api-php php artisan test
+
+    - name: Stop containers
+      if: always()
+      run: |
+        make docker-down
