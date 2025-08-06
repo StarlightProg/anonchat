@@ -40,9 +40,11 @@ jobs:
             exit 0
           fi
           sleep 10
+          docker logs anon_db
         done
         echo "Container did not become healthy in time"
         docker logs anon_api-php
+        docker ps
         exit 1
 
     - name: Run tests inside container
