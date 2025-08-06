@@ -32,13 +32,18 @@ jobs:
     
     - name: Wait for container
       run: |
-        until docker inspect -f '{{.State.Running}}' anon_api-php 2>/dev/null | grep -q "true"; do
-          sleep 1
+        for i in {1..10}; do
+          STATUS=$(docker inspect --format='{{.State.Health.Status}}' anon_api-php)
+          echo "Health status: $STATUS"
+          if [ "$STATUS" == "healthy" ]; then
+            echo "Container is healthy"
+            exit 0
+          fi
+          sleep 10
         done
-
-        docker exec anon_api-php bash -c 'until ./artisan migrate:status 2>&1 | grep -q -E "(Migration table not found|Migration name)"; do sleep 1; done'
-        
-        echo "Container is ready"
+        echo "Container did not become healthy in time"
+        docker logs anon_api-php
+        exit 1
 
     - name: Run tests inside container
       run: |
