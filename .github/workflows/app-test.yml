@@ -33,7 +33,7 @@ jobs:
 
     - name: Run tests inside container
       run: |
-        docker exec -it anon_api-php php artisan test
+        docker exec anon_api-php php artisan test
 
     - name: Stop containers
       if: always()
